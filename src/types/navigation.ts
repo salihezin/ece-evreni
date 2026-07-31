@@ -3,4 +3,8 @@ export type RootStackParamList = {
   StoryDetail: {
     storyId: string;
   };
+  ComicsDetail: {
+    comicId: string;
+  };
+
 };
