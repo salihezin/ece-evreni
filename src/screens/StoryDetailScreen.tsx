@@ -1,10 +1,8 @@
-import { Text, ScrollView, StyleSheet, Image, View, Dimensions, Pressable } from 'react-native';
-
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { Image, Pressable, StyleSheet, View, Text } from 'react-native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import { stories } from '../data/stories';
 import { useLayoutEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { useWindowDimensions } from 'react-native';
 
 type StoryDetailRouteProp = RouteProp<
@@ -12,10 +10,9 @@ type StoryDetailRouteProp = RouteProp<
   'StoryDetail'
 >;
 
-
-
 export default function StoryDetailScreen() {
   const { width, height } = useWindowDimensions();
+
   const route = useRoute<StoryDetailRouteProp>();
   const navigation = useNavigation();
 
@@ -26,72 +23,80 @@ export default function StoryDetailScreen() {
   );
 
   const [currentPage, setCurrentPage] = useState(0);
-  const isLandscape = width > height;
+  const [isFinished, setIsFinished] = useState(false);
+
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: story?.title ?? 'Masal',
+      headerShown: false,
     });
-  }, [navigation, story]);
+  }, [navigation]);
 
   if (!story) {
+    return null;
+  }
+
+  const goPrevious = () => {
+    setCurrentPage(page => Math.max(0, page - 1));
+  };
+
+  const goNext = () => {
+    if (currentPage >= story.pages.length - 1) {
+      setIsFinished(true);
+      return;
+    }
+
+    setCurrentPage(page => page + 1);
+  };
+
+  if (isFinished) {
     return (
-      <View style={styles.container}>
-        <Text>Masal bulunamadı.</Text>
-      </View>
+      <Pressable
+        style={styles.finishedContainer}
+        onPress={() => {
+          setCurrentPage(0);
+          setIsFinished(false);
+        }}
+      >
+        <>
+          <Text style={styles.finishedEmoji}>📖✨</Text>
+
+          <Text style={styles.finishedTitle}>
+            Bu masal da burada bitmişşşş...
+          </Text>
+
+          <Text style={styles.finishedText}>
+            Ama merak etme 😊
+          </Text>
+
+          <Text style={styles.finishedText}>
+            Tekrar okumak için ekrana dokunabilirsin.
+          </Text>
+        </>
+      </Pressable>
     );
   }
 
   return (
-    <View
-      style={[
-        styles.container,
-        isLandscape && styles.landscapeContainer,
-      ]}
-    >
-      <Pressable
-        style={isLandscape ? styles.imageContainerLandscape : undefined}
-        onPress={() => {
-          if (currentPage < story.pages.length - 1) {
-            setCurrentPage(p => p + 1);
-          }
+    <View style={styles.container}>
+      <Image
+        source={story.pages[currentPage].image}
+        style={{
+          width,
+          height,
         }}
-      >
-        <Image
-          source={story.pages[currentPage].image}
-          style={{
-            width: isLandscape ? width * 0.7 : width - 48,
-            height: isLandscape ? height - 100 : height / 2,
-          }}
-          resizeMode="contain"
-        />
-      </Pressable>
+        resizeMode="contain"
+      />
 
-      <View
-        style={
-          isLandscape
-            ? styles.buttonColumn
-            : styles.buttonRow
-        }
-      >
-        {currentPage > 0 && (
-          <Pressable
-            style={styles.button}
-            onPress={() => setCurrentPage(p => p - 1)}
-          >
-            <Text style={styles.buttonText}>← Önceki</Text>
-          </Pressable>
-        )}
+      <Pressable
+        style={styles.leftZone}
+        onPress={goPrevious}
+      />
 
-        {currentPage < story.pages.length - 1 && (
-          <Pressable
-            style={styles.button}
-            onPress={() => setCurrentPage(p => p + 1)}
-          >
-            <Text style={styles.buttonText}>Sonraki →</Text>
-          </Pressable>
-        )}
-      </View>
+      <Pressable
+        style={styles.rightZone}
+        onPress={goNext}
+      />
     </View>
   );
 }
@@ -99,39 +104,48 @@ export default function StoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    backgroundColor: '#000',
   },
 
-  landscapeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  leftZone: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '50%',
   },
 
-  imageContainerLandscape: {
+  rightZone: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: '50%',
+  },
+
+  finishedContainer: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  buttonColumn: {
-    width: 180,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 24,
+    padding: 32,
+    backgroundColor: '#FFF8E7',
   },
 
-  button: {
-    padding: 8,
+  finishedEmoji: {
+    fontSize: 72,
+    marginBottom: 24,
   },
 
-  buttonText: {
+  finishedTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+
+  finishedText: {
     fontSize: 18,
-    color: '#007AFF',
+    textAlign: 'center',
+    marginBottom: 8,
   },
 });
-

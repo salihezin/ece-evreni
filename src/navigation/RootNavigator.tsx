@@ -17,7 +17,7 @@ export default function RootNavigator() {
       <Stack.Screen
         name="StoryDetail"
         component={StoryDetailScreen}
-        options={{ title: 'Masal' }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

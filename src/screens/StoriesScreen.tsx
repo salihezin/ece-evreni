@@ -4,6 +4,7 @@ import { stories } from '../data/stories';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { StoryCard } from '../components/StoryCard';
 
 type StoriesScreenNavigationProp =
   NativeStackNavigationProp<RootStackParamList, 'Tabs'>;
@@ -12,25 +13,22 @@ export default function StoriesScreen() {
   const navigation = useNavigation<StoriesScreenNavigationProp>();
   return (
     <FlatList
-      style={styles.container}
       data={stories}
+      contentContainerStyle={{
+        paddingVertical: 32,
+        paddingHorizontal: 16,
+      }}
       renderItem={({ item }) => (
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => {
-            navigation.navigate('StoryDetail', { storyId: item.id });
-          }}
-        >
-          <Text>{item.title}</Text>
-        </TouchableOpacity>
-      )}
-      ListEmptyComponent={
-        <EmptyScreen
-          emoji="📖"
-          title="Masallar"
-          subtitle="Ece'nin özel hikayeleri burada olacak."
+        <StoryCard
+          title={item.title}
+          cover={item.cover}
+          onPress={() =>
+            navigation.navigate('StoryDetail', {
+              storyId: item.id,
+            })
+          }
         />
-      }
+      )}
     />
   );
 }

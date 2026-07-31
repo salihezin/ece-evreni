@@ -8,6 +8,6 @@ export type StoryPage = {
 export type Story = {
   id: string;
   title: string;
-  coverEmoji: string;
+  cover: ImageSourcePropType;
   pages: StoryPage[];
 };

@@ -6,7 +6,7 @@ const fileExtension = '.png';
 export const happyBirthdayCaptainWithDemirs: Story = {
     id: 'happy-birthday-captain-with-demirs',
     title: 'Minik Kaptan Anneannesi, Dedesi, ve Teyzesi ile Doğum Günü Kutlaması',
-    coverEmoji: '🎂',
+    cover: require(`${basePath}1${fileExtension}`),
     pages: [
       {
         text: 'İyi ki doğdun küçük kaptan! 🎉',
