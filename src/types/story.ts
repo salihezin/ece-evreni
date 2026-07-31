@@ -6,5 +6,5 @@ export type Story = {
   description: string;
   fullStory: string;
   cover: ImageSourcePropType;
-  audio?: string;
+  audio: string;
 };
