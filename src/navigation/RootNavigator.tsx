@@ -4,6 +4,7 @@ import AppTabs from './AppTabs';
 import StoryDetailScreen from '../screens/StoryDetailScreen';
 import ComicsDetailScreen from '../screens/ComicsDetailScreen';
 import FamilyDetailScreen from '../screens/FamilyDetailScreen';
+import AdminScreen from '../screens/Admin';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,11 @@ export default function RootNavigator() {
       <Stack.Screen
         name="FamilyDetail"
         component={FamilyDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Admin"
+        component={AdminScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

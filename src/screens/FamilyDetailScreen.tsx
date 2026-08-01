@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -14,12 +14,27 @@ import {
 } from '@react-navigation/native';
 
 import { RootStackParamList } from '../types/navigation';
-import { eceFamilyMembers as familyMembers } from '../data/family/ece';
+import {
+  getFamilyMemberById,
+  getPhotosByMember,
+} from '../db/database';
 
 type FamilyDetailRouteProp = RouteProp<
   RootStackParamList,
   'FamilyDetail'
 >;
+
+type FamilyMember = {
+  id: string;
+  name: string;
+  emoji: string;
+};
+
+type FamilyPhoto = {
+  id: number;
+  member_id: string;
+  photo_url: string;
+};
 
 export default function FamilyDetailScreen() {
   const route = useRoute<FamilyDetailRouteProp>();
@@ -27,22 +42,63 @@ export default function FamilyDetailScreen() {
 
   const { familyMemberId } = route.params;
 
-  const member = familyMembers.find(
-    item => item.id === familyMemberId
-  );
+  const [member, setMember] =
+    useState<FamilyMember | null>(null);
 
-  const [currentPhoto, setCurrentPhoto] = useState(0);
+  const [photos, setPhotos] =
+    useState<FamilyPhoto[]>([]);
+
+  const [currentPhoto, setCurrentPhoto] =
+    useState(0);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const memberData =
+          await getFamilyMemberById(
+            familyMemberId,
+          );
+
+        const photosData =
+          await getPhotosByMember(
+            familyMemberId,
+          );
+
+        setMember(memberData);
+        setPhotos(photosData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadData();
+  }, [familyMemberId]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: member?.name ?? 'Aile',
+      title: member
+        ? `${member.emoji} ${member.name}`
+        : 'Aile',
     });
   }, [navigation, member]);
 
   if (!member) {
     return (
       <View style={styles.center}>
-        <Text>Kişi bulunamadı.</Text>
+        <Text>Yükleniyor...</Text>
+      </View>
+    );
+  }
+
+  if (photos.length === 0) {
+    return (
+      <View style={styles.center}>
+        <Text>
+          {member.emoji} {member.name}
+        </Text>
+        <Text>
+          Henüz fotoğraf eklenmemiş.
+        </Text>
       </View>
     );
   }
@@ -52,26 +108,38 @@ export default function FamilyDetailScreen() {
       <Pressable
         style={{ flex: 1 }}
         onPress={() => {
-          if (currentPhoto < member.photos.length - 1) {
-            setCurrentPhoto(p => p + 1);
+          if (
+            currentPhoto <
+            photos.length - 1
+          ) {
+            setCurrentPhoto(
+              p => p + 1,
+            );
           } else {
             setCurrentPhoto(0);
           }
         }}
       >
         <Image
-          source={member.photos[currentPhoto]}
+          source={{
+            uri: photos[currentPhoto]
+              .photo_url,
+          }}
           style={styles.image}
           resizeMode="contain"
         />
       </Pressable>
+
       <View style={styles.dots}>
-        {member.photos.map((_, index) => (
+        {photos.map((_, index) => (
           <Text
             key={index}
             style={{
               fontSize: 20,
-              opacity: currentPhoto === index ? 1 : 0.3,
+              opacity:
+                currentPhoto === index
+                  ? 1
+                  : 0.3,
             }}
           >
             ●
@@ -83,31 +151,15 @@ export default function FamilyDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-  },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 12,
   },
   image: {
     flex: 1,
     width: '100%',
-  },
-  counter: {
-    textAlign: 'center',
-    fontSize: 18,
-    marginVertical: 12,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  button: {
-    fontSize: 18,
-    color: '#007AFF',
   },
   dots: {
     flexDirection: 'row',

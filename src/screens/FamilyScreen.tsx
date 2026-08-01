@@ -1,17 +1,52 @@
 import { View, Text, FlatList, Image, StyleSheet, Pressable } from 'react-native';
-import { eceFamilyMembers as familyMembers } from '../data/family/ece';
 import { RootStackParamList } from '../types/navigation';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useEffect, useState } from 'react';
+import { getFamilyMembers, getPhotosByMember } from '../db/database';
 
 export default function FamilyScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [members, setMembers] = useState<Array<{ id: string; name: string; emoji: string; photos: Array<{ photo_url: string }> }>>([]);
+
+  const fetchFamilyMembers = async () => {
+    const members = await getFamilyMembers();
+
+    const membersWithPhotos = await Promise.all(
+      members.map(async member => ({
+        ...member,
+        photos: await getPhotosByMember(member.id),
+      })),
+    );
+
+    setMembers(membersWithPhotos);
+  };
+
+  useEffect(() => {
+    fetchFamilyMembers();
+  }, []);
+
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: '#f0f0f0' }}>
+      <Pressable
+        onLongPress={() => navigation.navigate('Admin')}
+        delayLongPress={3000}
+      >
+        <Text
+          style={{
+            fontSize: 28,
+            textAlign: 'center',
+            marginVertical: 16,
+          }}
+        >
+          👨‍👩‍👧
+        </Text>
+      </Pressable>
       <FlatList
-        data={familyMembers}
+        data={members}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
+          console.log('Rendering member:', item);
           return (
             <Pressable
               style={styles.card}
@@ -23,7 +58,7 @@ export default function FamilyScreen() {
             >
               <View style={styles.card}>
                 <Image
-                  source={item.photos[0]}
+                  source={item.photos && item.photos[0] && item.photos[0].photo_url ? { uri: item.photos[0].photo_url } : require('../../assets/images/family/liya-ece1.jpg')}
                   style={styles.image}
                   resizeMode='stretch' />
                 <Text style={styles.name}>

@@ -9,4 +9,5 @@ export type RootStackParamList = {
   FamilyDetail: {
     familyMemberId: string;
   };
+  Admin: undefined;
 };
