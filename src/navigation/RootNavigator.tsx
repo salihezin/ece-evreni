@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AppTabs from './AppTabs';
 import StoryDetailScreen from '../screens/StoryDetailScreen';
 import ComicsDetailScreen from '../screens/ComicsDetailScreen';
+import FamilyDetailScreen from '../screens/FamilyDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +24,11 @@ export default function RootNavigator() {
       <Stack.Screen
         name="ComicsDetail"
         component={ComicsDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="FamilyDetail"
+        component={FamilyDetailScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

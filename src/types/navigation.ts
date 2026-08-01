@@ -6,5 +6,7 @@ export type RootStackParamList = {
   ComicsDetail: {
     comicId: string;
   };
-
+  FamilyDetail: {
+    familyMemberId: string;
+  };
 };
