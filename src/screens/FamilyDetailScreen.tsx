@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import {
   Image,
   Pressable,
@@ -17,6 +18,7 @@ import { RootStackParamList } from '../types/navigation';
 import {
   getFamilyMemberById,
   getPhotosByMember,
+  deletePhotosByMemberId,
 } from '../db/database';
 
 type FamilyDetailRouteProp = RouteProp<
@@ -39,6 +41,32 @@ type FamilyPhoto = {
 export default function FamilyDetailScreen() {
   const route = useRoute<FamilyDetailRouteProp>();
   const navigation = useNavigation();
+
+  const handleDeletePhoto = async () => {
+    Alert.alert(
+      'Fotoğrafı Sil',
+      'Bu fotoğrafı silmek istediğinizden emin misiniz?',
+      [
+        {
+          text: 'İptal',
+          style: 'cancel',
+        },
+        {
+          text: 'Sil',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deletePhotosByMemberId(familyMemberId);
+              setPhotos([]);
+              setCurrentPhoto(0);
+            } catch (error) {
+              console.error(error);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const { familyMemberId } = route.params;
 
@@ -119,6 +147,8 @@ export default function FamilyDetailScreen() {
             setCurrentPhoto(0);
           }
         }}
+        onLongPress={handleDeletePhoto}
+        delayLongPress={3000}
       >
         <Image
           source={{

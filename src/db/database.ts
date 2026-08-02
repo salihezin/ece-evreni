@@ -84,4 +84,28 @@ export const getFamilyMemberById = async (
   );
 };
 
+export const deleteFamilyMemberById = async (
+  id: string,
+) => {
+  await db.runAsync(
+    `
+      DELETE FROM family_members
+      WHERE id = ?
+    `,
+    [id],
+  );
+};
+
+export const deletePhotosByMemberId = async (
+  memberId: string,
+) => {
+  await db.runAsync(
+    `
+      DELETE FROM family_photos
+      WHERE member_id = ?
+    `,
+    [memberId],
+  );
+};
+
 export default db;

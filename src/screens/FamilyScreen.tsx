@@ -46,7 +46,6 @@ export default function FamilyScreen() {
         data={members}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          console.log('Rendering member:', item);
           return (
             <Pressable
               style={styles.card}
