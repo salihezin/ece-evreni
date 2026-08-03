@@ -1,13 +1,14 @@
-import { ImageSourcePropType } from "react-native";
-
 export type ComicPage = {
-  text?: string;
-  image: ImageSourcePropType;
+  id: number;
+  text?: string | null;
+  /** file:// URI pointing to persistent storage, not a require() asset. */
+  image: string;
 };
 
 export type Comic = {
-    id: string;
-    title: string;
-    cover: ImageSourcePropType;
-    pages: ComicPage[];
-}
+  id: string;
+  title: string;
+  /** file:// URI pointing to persistent storage, not a require() asset. */
+  cover: string;
+  pages: ComicPage[];
+};

@@ -3,7 +3,7 @@ import { RootStackParamList } from '../types/navigation';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { getFamilyMembers, getPhotosByMember } from '../db/database';
+import { getFamilyMembers, getPhotosByMember } from '../db';
 
 export default function FamilyScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

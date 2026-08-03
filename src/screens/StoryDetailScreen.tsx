@@ -1,9 +1,11 @@
-import { Image, Pressable, StyleSheet, View, Text } from 'react-native';
+import { Image, Pressable, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
-import { stories } from '../data/stories';
-import { useState } from 'react';
+import { getStoryById } from '../db';
+import type { Story } from '../types/story';
+import { useEffect, useState } from 'react';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { EmptyScreen } from '../components/EmptyScreen';
 
 type StoryDetailRouteProp = RouteProp<
   RootStackParamList,
@@ -12,25 +14,42 @@ type StoryDetailRouteProp = RouteProp<
 
 export default function StoryDetailScreen() {
   const route = useRoute<StoryDetailRouteProp>();
-
-  const [isPlaying, setIsPlaying] = useState(false);
-
   const { storyId } = route.params;
 
-  const story = stories.find(
-    story => story.id === storyId
-  );
+  const [story, setStory] = useState<Story | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  if (!story) {
-    return null;
-  }
+  useEffect(() => {
+    let isActive = true;
 
-  const player = useAudioPlayer(story.audio);
+    const load = async () => {
+      try {
+        const data = await getStoryById(storyId);
+        if (isActive) {
+          setStory(data);
+        }
+      } catch (error) {
+        console.error('Error loading story:', error);
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      isActive = false;
+    };
+  }, [storyId]);
+
+  // Called unconditionally (with a null source while loading) so the
+  // number of hooks stays constant across renders — required by the
+  // rules of hooks now that `story` arrives asynchronously.
+  const player = useAudioPlayer(story?.audio ?? null);
   const status = useAudioPlayerStatus(player);
-  const progress =
-    status.duration > 0
-      ? status.currentTime / status.duration
-      : 0;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -49,10 +68,28 @@ export default function StoryDetailScreen() {
     setIsPlaying(!isPlaying);
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!story) {
+    return (
+      <EmptyScreen
+        emoji="📖"
+        title="Masal bulunamadı"
+        subtitle="Bu masal artık mevcut değil."
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Image
-        source={story.cover}
+        source={{ uri: story.cover }}
         style={styles.cover}
         resizeMode="contain"
       />
@@ -91,6 +128,12 @@ export default function StoryDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   container: {
     flex: 1,
     padding: 24,

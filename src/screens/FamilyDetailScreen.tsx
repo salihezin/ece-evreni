@@ -19,7 +19,7 @@ import {
   getFamilyMemberById,
   getPhotosByMember,
   deletePhotosByMemberId,
-} from '../db/database';
+} from '../db';
 
 type FamilyDetailRouteProp = RouteProp<
   RootStackParamList,

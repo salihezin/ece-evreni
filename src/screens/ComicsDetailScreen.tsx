@@ -1,9 +1,11 @@
-import { Image, Pressable, StyleSheet, View, Text } from 'react-native';
+import { Image, Pressable, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
-import { comics as comicsData } from '../data/comics';
-import { useLayoutEffect, useState } from 'react';
+import { getComicWithPages } from '../db';
+import type { Comic } from '../types/comics';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
+import { EmptyScreen } from '../components/EmptyScreen';
 
 type ComicsDetailRouteProp = RouteProp<
   RootStackParamList,
@@ -18,13 +20,11 @@ export default function ComicsDetailScreen() {
 
   const { comicId } = route.params;
 
-  const comics = comicsData.find(
-    comics => comics.id === comicId
-  );
+  const [comic, setComic] = useState<Comic | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
-
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -32,8 +32,47 @@ export default function ComicsDetailScreen() {
     });
   }, [navigation]);
 
-  if (!comics) {
-    return null;
+  useEffect(() => {
+    let isActive = true;
+
+    const load = async () => {
+      try {
+        const data = await getComicWithPages(comicId);
+        if (isActive) {
+          setComic(data);
+        }
+      } catch (error) {
+        console.error('Error loading comic:', error);
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      isActive = false;
+    };
+  }, [comicId]);
+
+  if (isLoading) {
+    return (
+      <View style={styles.centerLoading}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
+
+  if (!comic || comic.pages.length === 0) {
+    return (
+      <EmptyScreen
+        emoji="📕"
+        title="Çizgi roman bulunamadı"
+        subtitle="Bu çizgi roman artık mevcut değil."
+      />
+    );
   }
 
   const goPrevious = () => {
@@ -41,7 +80,7 @@ export default function ComicsDetailScreen() {
   };
 
   const goNext = () => {
-    if (currentPage >= comics.pages.length - 1) {
+    if (currentPage >= comic.pages.length - 1) {
       setIsFinished(true);
       return;
     }
@@ -80,7 +119,7 @@ export default function ComicsDetailScreen() {
   return (
     <View style={styles.container}>
       <Image
-        source={comics.pages[currentPage].image}
+        source={{ uri: comic.pages[currentPage].image }}
         style={{
           width,
           height,
@@ -104,6 +143,13 @@ export default function ComicsDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
+  },
+
+  centerLoading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#000',
   },
 

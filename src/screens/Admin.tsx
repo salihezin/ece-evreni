@@ -7,10 +7,10 @@ import {
   View,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { addFamilyMember, getFamilyMembers } from '../db/database';
+import { addFamilyMember, getFamilyMembers } from '../db';
 import { ScrollView } from 'react-native';
 import { Text } from 'react-native';
-import { addPhotoToMember } from '../db/database';
+import { addPhotoToMember } from '../db';
 
 export default function AdminScreen() {
   const [name, setName] = useState('');
