@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { hasPinSet, setPin, verifyPin } from './pin';
 
 const PIN_LENGTH = 4;
@@ -19,11 +20,29 @@ export function PinGate({ children, title }: Props) {
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    hasPinSet().then(exists => {
-      setStatus(exists ? 'enter' : 'create');
-    });
-  }, []);
+  // Re-checked every time this screen gains focus (not just on first
+  // mount) so switching to the "Yönetim" tab always asks for the PIN
+  // again, even though React Navigation keeps tab screens mounted.
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      setStatus('checking');
+      setInput('');
+      setPendingPin('');
+      setError('');
+
+      hasPinSet().then(exists => {
+        if (isActive) {
+          setStatus(exists ? 'enter' : 'create');
+        }
+      });
+
+      return () => {
+        isActive = false;
+      };
+    }, []),
+  );
 
   const handleComplete = async (value: string) => {
     if (status === 'create') {

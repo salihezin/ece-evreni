@@ -47,14 +47,6 @@ export default function ComicsScreen() {
       data={comics}
       keyExtractor={item => item.id}
       contentContainerStyle={styles.contentContainer}
-      ListHeaderComponent={
-        <Pressable
-          onLongPress={() => navigation.navigate('AdminComics')}
-          delayLongPress={3000}
-        >
-          <Text style={styles.hiddenHeaderEmoji}>📕</Text>
-        </Pressable>
-      }
       renderItem={({ item }) => (
         <Pressable
           style={styles.card}
@@ -72,11 +64,6 @@ export default function ComicsScreen() {
 }
 
 const styles = StyleSheet.create({
-  hiddenHeaderEmoji: {
-    fontSize: 28,
-    textAlign: 'center',
-    marginVertical: 16,
-  },
   center: {
     flex: 1,
     alignItems: 'center',

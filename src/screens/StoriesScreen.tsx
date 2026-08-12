@@ -61,14 +61,6 @@ export default function StoriesScreen() {
       data={stories}
       keyExtractor={item => item.id}
       contentContainerStyle={{ paddingVertical: 32, paddingHorizontal: 16 }}
-      ListHeaderComponent={
-        <Pressable
-          onLongPress={() => navigation.navigate('AdminStories')}
-          delayLongPress={3000}
-        >
-          <Text style={styles.hiddenHeaderEmoji}>📚</Text>
-        </Pressable>
-      }
       renderItem={({ item, index }) => (
         <Pressable
           onPress={() => navigation.navigate('StoryDetail', { storyId: item.id })}
@@ -99,11 +91,6 @@ export default function StoriesScreen() {
 }
 
 const styles = StyleSheet.create({
-  hiddenHeaderEmoji: {
-    fontSize: 28,
-    textAlign: 'center',
-    marginVertical: 16,
-  },
   center: {
     flex: 1,
     alignItems: 'center',

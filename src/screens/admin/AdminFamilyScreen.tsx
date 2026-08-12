@@ -20,7 +20,6 @@ import {
   updateFamilyMember,
 } from '../../db';
 import { copyExternalUriToStorage, deleteStoredFile } from '../../utils/assetStorage';
-import { PinGate } from '../../auth/PinGate';
 import { useFocusAsyncData } from '../../hooks/useFocusAsyncData';
 
 type Member = { id: string; name: string; emoji: string };
@@ -277,11 +276,7 @@ function AdminFamilyContent() {
 }
 
 export default function AdminFamilyScreen() {
-  return (
-    <PinGate title="Aile Yönetimi">
-      <AdminFamilyContent />
-    </PinGate>
-  );
+  return <AdminFamilyContent />;
 }
 
 const styles = StyleSheet.create({

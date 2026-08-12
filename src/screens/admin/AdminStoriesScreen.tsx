@@ -20,7 +20,6 @@ import {
 } from '../../db';
 import type { Story } from '../../types/story';
 import { copyExternalUriToStorage, deleteStoredFile } from '../../utils/assetStorage';
-import { PinGate } from '../../auth/PinGate';
 import { useFocusAsyncData } from '../../hooks/useFocusAsyncData';
 
 const emptyForm = {
@@ -251,11 +250,7 @@ function AdminStoriesContent() {
 }
 
 export default function AdminStoriesScreen() {
-  return (
-    <PinGate title="Masallar Yönetimi">
-      <AdminStoriesContent />
-    </PinGate>
-  );
+  return <AdminStoriesContent />;
 }
 
 const styles = StyleSheet.create({

@@ -21,7 +21,6 @@ import {
 } from '../../db';
 import type { Comic, ComicPage } from '../../types/comics';
 import { copyExternalUriToStorage, deleteStoredFile } from '../../utils/assetStorage';
-import { PinGate } from '../../auth/PinGate';
 import { useFocusAsyncData } from '../../hooks/useFocusAsyncData';
 
 function AdminComicsContent() {
@@ -332,11 +331,7 @@ function AdminComicsContent() {
 }
 
 export default function AdminComicsScreen() {
-  return (
-    <PinGate title="Çizgi Romanlar Yönetimi">
-      <AdminComicsContent />
-    </PinGate>
-  );
+  return <AdminComicsContent />;
 }
 
 const styles = StyleSheet.create({

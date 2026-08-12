@@ -31,20 +31,15 @@ export default function FamilyScreen() {
 
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: '#f0f0f0' }}>
-      <Pressable
-        onLongPress={() => navigation.navigate('AdminFamily')}
-        delayLongPress={3000}
+      <Text
+        style={{
+          fontSize: 28,
+          textAlign: 'center',
+          marginVertical: 16,
+        }}
       >
-        <Text
-          style={{
-            fontSize: 28,
-            textAlign: 'center',
-            marginVertical: 16,
-          }}
-        >
-          👨‍👩‍👧
-        </Text>
-      </Pressable>
+        👨‍👩‍👧
+      </Text>
       <FlatList
         data={members}
         keyExtractor={item => item.id}
