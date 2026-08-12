@@ -1,4 +1,4 @@
-import { db } from './client';
+import { db, tableHasColumn } from './client';
 import type { Story } from '../types/story';
 
 type StoryRow = {
@@ -20,18 +20,31 @@ const mapRow = (row: StoryRow): Story => ({
   audio: row.audio_path,
 });
 
+const CREATE_STORIES_SQL = `
+  CREATE TABLE IF NOT EXISTS stories (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    full_story TEXT NOT NULL,
+    cover_path TEXT NOT NULL,
+    audio_path TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+`;
+
 export const createStoriesTable = async () => {
-  await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS stories (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      full_story TEXT NOT NULL,
-      cover_path TEXT NOT NULL,
-      audio_path TEXT NOT NULL,
-      created_at INTEGER NOT NULL
-    );
-  `);
+  await db.execAsync(CREATE_STORIES_SQL);
+
+  // Self-heals a "stories" table left over from an earlier/different
+  // schema (e.g. missing created_at). Safe to drop and recreate: story
+  // content is always reseeded from bundled assets on first run, and any
+  // Admin-added stories at this stage of development are still test data.
+  const hasCreatedAt = await tableHasColumn('stories', 'created_at');
+
+  if (!hasCreatedAt) {
+    await db.execAsync('DROP TABLE stories;');
+    await db.execAsync(CREATE_STORIES_SQL);
+  }
 };
 
 export const getStories = async (): Promise<Story[]> => {

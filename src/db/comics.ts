@@ -1,4 +1,4 @@
-import { db } from './client';
+import { db, tableHasColumn } from './client';
 import type { Comic, ComicPage } from '../types/comics';
 
 type ComicRow = {
@@ -22,24 +22,38 @@ const mapPageRow = (row: ComicPageRow): ComicPage => ({
   image: row.image_path,
 });
 
-export const createComicsTables = async () => {
-  await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS comics (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      cover_path TEXT NOT NULL,
-      created_at INTEGER NOT NULL
-    );
+const CREATE_COMICS_SQL = `
+  CREATE TABLE IF NOT EXISTS comics (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    cover_path TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  );
 
-    CREATE TABLE IF NOT EXISTS comic_pages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      comic_id TEXT NOT NULL,
-      page_order INTEGER NOT NULL,
-      text TEXT,
-      image_path TEXT NOT NULL,
-      FOREIGN KEY (comic_id) REFERENCES comics(id) ON DELETE CASCADE
-    );
-  `);
+  CREATE TABLE IF NOT EXISTS comic_pages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    comic_id TEXT NOT NULL,
+    page_order INTEGER NOT NULL,
+    text TEXT,
+    image_path TEXT NOT NULL,
+    FOREIGN KEY (comic_id) REFERENCES comics(id) ON DELETE CASCADE
+  );
+`;
+
+export const createComicsTables = async () => {
+  await db.execAsync(CREATE_COMICS_SQL);
+
+  // Same self-healing as stories: drop and recreate if a pre-existing
+  // table doesn't match the current schema. Safe — comic content is
+  // always reseeded from bundled assets on first run.
+  const comicsOk = await tableHasColumn('comics', 'created_at');
+  const pagesOk = await tableHasColumn('comic_pages', 'page_order');
+
+  if (!comicsOk || !pagesOk) {
+    await db.execAsync('DROP TABLE IF EXISTS comic_pages;');
+    await db.execAsync('DROP TABLE IF EXISTS comics;');
+    await db.execAsync(CREATE_COMICS_SQL);
+  }
 };
 
 export const getComics = async (): Promise<Omit<Comic, 'pages'>[]> => {
