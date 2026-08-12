@@ -1,49 +1,30 @@
-import { Image, Pressable, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import { getStoryById } from '../db';
 import type { Story } from '../types/story';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { EmptyScreen } from '../components/EmptyScreen';
+import { useFocusAsyncData } from '../hooks/useFocusAsyncData';
 
-type StoryDetailRouteProp = RouteProp<
-  RootStackParamList,
-  'StoryDetail'
->;
+type StoryDetailRouteProp = RouteProp<RootStackParamList, 'StoryDetail'>;
 
 export default function StoryDetailScreen() {
   const route = useRoute<StoryDetailRouteProp>();
   const { storyId } = route.params;
 
-  const [story, setStory] = useState<Story | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const loadStory = useCallback(() => getStoryById(storyId), [storyId]);
+  const { data: story, isLoading } = useFocusAsyncData<Story | null>(loadStory, null);
+
   const [isPlaying, setIsPlaying] = useState(false);
-
-  useEffect(() => {
-    let isActive = true;
-
-    const load = async () => {
-      try {
-        const data = await getStoryById(storyId);
-        if (isActive) {
-          setStory(data);
-        }
-      } catch (error) {
-        console.error('Error loading story:', error);
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      isActive = false;
-    };
-  }, [storyId]);
 
   // Called unconditionally (with a null source while loading) so the
   // number of hooks stays constant across renders — required by the
@@ -88,22 +69,17 @@ export default function StoryDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <Image
-        source={{ uri: story.cover }}
-        style={styles.cover}
-        resizeMode="contain"
-      />
+      <Image source={{ uri: story.cover }} style={styles.cover} resizeMode="contain" />
 
-      <Text style={styles.title}>
-        {story.title}
-      </Text>
+      <Text style={styles.title}>{story.title}</Text>
 
-      <Pressable
-        style={styles.playButton}
-        onPress={handlePlayPause}
-      >
+      <Pressable style={styles.playButton} onPress={handlePlayPause}>
         <Text style={styles.playButtonText}>
-          {status.didJustFinish ? '▶️ Tekrar Oynat' : isPlaying ? '⏸️ Duraklat' : '▶️ Dinle'}
+          {status.didJustFinish
+            ? '▶️ Tekrar Oynat'
+            : isPlaying
+              ? '⏸️ Duraklat'
+              : '▶️ Dinle'}
         </Text>
         <Text style={styles.timeText}>
           {formatTime(status.currentTime)} / {formatTime(status.duration)}
@@ -114,10 +90,9 @@ export default function StoryDetailScreen() {
             style={[
               styles.progressBarFill,
               {
-                width: `${status.duration > 0
-                    ? (status.currentTime / status.duration) * 100
-                    : 0
-                  }%`,
+                width: `${
+                  status.duration > 0 ? (status.currentTime / status.duration) * 100 : 0
+                }%`,
               },
             ]}
           />

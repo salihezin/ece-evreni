@@ -69,24 +69,17 @@ export const getComics = async (): Promise<Omit<Comic, 'pages'>[]> => {
 };
 
 const getComicRowById = async (id: string): Promise<ComicRow | null> => {
-  return await db.getFirstAsync<ComicRow>(
-    'SELECT * FROM comics WHERE id = ?',
-    [id],
-  );
+  return await db.getFirstAsync<ComicRow>('SELECT * FROM comics WHERE id = ?', [id]);
 };
 
-export const getComicPageRows = async (
-  comicId: string,
-): Promise<ComicPageRow[]> => {
+export const getComicPageRows = async (comicId: string): Promise<ComicPageRow[]> => {
   return await db.getAllAsync<ComicPageRow>(
     'SELECT * FROM comic_pages WHERE comic_id = ? ORDER BY page_order ASC',
     [comicId],
   );
 };
 
-export const getComicWithPages = async (
-  id: string,
-): Promise<Comic | null> => {
+export const getComicWithPages = async (id: string): Promise<Comic | null> => {
   const row = await getComicRowById(id);
 
   if (!row) {
@@ -143,9 +136,7 @@ export const updateComic = async (
     coverPath: 'cover_path',
   };
 
-  const entries = Object.entries(fields).filter(
-    ([, value]) => value !== undefined,
-  );
+  const entries = Object.entries(fields).filter(([, value]) => value !== undefined);
 
   if (entries.length === 0) {
     return;
@@ -157,10 +148,7 @@ export const updateComic = async (
 
   const values = entries.map(([, value]) => value);
 
-  await db.runAsync(`UPDATE comics SET ${setClause} WHERE id = ?`, [
-    ...values,
-    id,
-  ]);
+  await db.runAsync(`UPDATE comics SET ${setClause} WHERE id = ?`, [...values, id]);
 };
 
 export const updateComicPage = async (
@@ -172,9 +160,7 @@ export const updateComicPage = async (
     imagePath: 'image_path',
   };
 
-  const entries = Object.entries(fields).filter(
-    ([, value]) => value !== undefined,
-  );
+  const entries = Object.entries(fields).filter(([, value]) => value !== undefined);
 
   if (entries.length === 0) {
     return;
@@ -198,10 +184,7 @@ export const deleteComicPage = async (pageId: number) => {
 
 // Reassigns page_order for a comic's pages to match the given order of
 // page ids. Used by the Admin page-reordering UI (Phase 2).
-export const reorderComicPages = async (
-  comicId: string,
-  orderedPageIds: number[],
-) => {
+export const reorderComicPages = async (comicId: string, orderedPageIds: number[]) => {
   await db.withTransactionAsync(async () => {
     for (let index = 0; index < orderedPageIds.length; index++) {
       await db.runAsync(

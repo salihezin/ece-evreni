@@ -66,8 +66,7 @@ const seedStoriesIfEmpty = async () => {
 
   await addStory({
     id: 'happy-birthday-captain-with-demirs',
-    title:
-      'Minik Kaptan Anneannesi, Dedesi, ve Teyzesi ile Doğum Günü Kutlaması',
+    title: 'Minik Kaptan Anneannesi, Dedesi, ve Teyzesi ile Doğum Günü Kutlaması',
     description:
       'Minik Kaptan, anneannesi, dedesi ve teyzesi ile birlikte doğum günü kutlaması yapıyor. Bu özel günün tadını çıkarıyorlar.',
     fullStory:
@@ -99,12 +98,7 @@ const seedStoriesIfEmpty = async () => {
   });
 };
 
-const seedComic = async (
-  id: string,
-  title: string,
-  pages: number[],
-  texts: string[],
-) => {
+const seedComic = async (id: string, title: string, pages: number[], texts: string[]) => {
   const coverPath = await copyBundledAssetToStorage(
     pages[0],
     'comics',

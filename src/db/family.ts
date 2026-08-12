@@ -16,27 +16,21 @@ export const createFamilyTables = async () => {
   `);
 };
 
-export const addFamilyMember = async (
-  id: string,
-  name: string,
-  emoji: string,
-) => {
-  await db.runAsync(
-    'INSERT INTO family_members (id, name, emoji) VALUES (?, ?, ?)',
-    [id, name, emoji],
-  );
+export const addFamilyMember = async (id: string, name: string, emoji: string) => {
+  await db.runAsync('INSERT INTO family_members (id, name, emoji) VALUES (?, ?, ?)', [
+    id,
+    name,
+    emoji,
+  ]);
 };
 
 export const getFamilyMembers = async (): Promise<
-  Array<{ id: string; name: string; emoji: string }>
+  { id: string; name: string; emoji: string }[]
 > => {
   return await db.getAllAsync('SELECT * FROM family_members');
 };
 
-export const addPhotoToMember = async (
-  memberId: string,
-  photoUrl: string,
-) => {
+export const addPhotoToMember = async (memberId: string, photoUrl: string) => {
   await db.runAsync(
     `
     INSERT INTO family_photos
@@ -76,6 +70,29 @@ export const getFamilyMemberById = async (id: string) => {
     `,
     [id],
   );
+};
+
+export const updateFamilyMember = async (
+  id: string,
+  fields: Partial<{ name: string; emoji: string }>,
+) => {
+  const entries = Object.entries(fields).filter(([, value]) => value !== undefined);
+
+  if (entries.length === 0) {
+    return;
+  }
+
+  const setClause = entries.map(([key]) => `${key} = ?`).join(', ');
+  const values = entries.map(([, value]) => value);
+
+  await db.runAsync(`UPDATE family_members SET ${setClause} WHERE id = ?`, [
+    ...values,
+    id,
+  ]);
+};
+
+export const deletePhotoById = async (photoId: number) => {
+  await db.runAsync('DELETE FROM family_photos WHERE id = ?', [photoId]);
 };
 
 export const deletePhotosByMemberId = async (memberId: string) => {

@@ -56,23 +56,17 @@ export const getStories = async (): Promise<Story[]> => {
 };
 
 export const getStoryById = async (id: string): Promise<Story | null> => {
-  const row = await db.getFirstAsync<StoryRow>(
-    'SELECT * FROM stories WHERE id = ?',
-    [id],
-  );
+  const row = await db.getFirstAsync<StoryRow>('SELECT * FROM stories WHERE id = ?', [
+    id,
+  ]);
 
   return row ? mapRow(row) : null;
 };
 
 // Also returns the raw cover_path/audio_path — used when deleting a story
 // so the caller can remove the associated media files from disk.
-export const getStoryRowById = async (
-  id: string,
-): Promise<StoryRow | null> => {
-  return await db.getFirstAsync<StoryRow>(
-    'SELECT * FROM stories WHERE id = ?',
-    [id],
-  );
+export const getStoryRowById = async (id: string): Promise<StoryRow | null> => {
+  return await db.getFirstAsync<StoryRow>('SELECT * FROM stories WHERE id = ?', [id]);
 };
 
 export const addStory = async (story: {
@@ -122,9 +116,7 @@ export const updateStory = async (
     audioPath: 'audio_path',
   };
 
-  const entries = Object.entries(fields).filter(
-    ([, value]) => value !== undefined,
-  );
+  const entries = Object.entries(fields).filter(([, value]) => value !== undefined);
 
   if (entries.length === 0) {
     return;
@@ -136,10 +128,7 @@ export const updateStory = async (
 
   const values = entries.map(([, value]) => value);
 
-  await db.runAsync(`UPDATE stories SET ${setClause} WHERE id = ?`, [
-    ...values,
-    id,
-  ]);
+  await db.runAsync(`UPDATE stories SET ${setClause} WHERE id = ?`, [...values, id]);
 };
 
 // Deletes the DB row only. The caller should read cover_path/audio_path

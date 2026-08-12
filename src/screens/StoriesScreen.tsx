@@ -1,16 +1,29 @@
-import { useCallback, useState } from 'react';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { View, Text, FlatList, Image, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
 import { getStories } from '../db';
 import type { Story } from '../types/story';
 import { EmptyScreen } from '../components/EmptyScreen';
+import { useFocusAsyncData } from '../hooks/useFocusAsyncData';
 
-type StoriesScreenNavigationProp =
-  NativeStackNavigationProp<RootStackParamList, 'Tabs'>;
+type StoriesScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tabs'>;
 
-const StoryTitleAndDescription = ({ title, description }: { title: string; description: string }) => (
+const StoryTitleAndDescription = ({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) => (
   <View style={styles.textContainer}>
     <Text style={styles.title}>{title}</Text>
     <Text style={styles.description}>{description}</Text>
@@ -23,35 +36,7 @@ const StoryImage = ({ cover }: { cover: string }) => (
 
 export default function StoriesScreen() {
   const navigation = useNavigation<StoriesScreenNavigationProp>();
-  const [stories, setStories] = useState<Story[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useFocusEffect(
-    useCallback(() => {
-      let isActive = true;
-
-      const load = async () => {
-        try {
-          const data = await getStories();
-          if (isActive) {
-            setStories(data);
-          }
-        } catch (error) {
-          console.error('Error loading stories:', error);
-        } finally {
-          if (isActive) {
-            setIsLoading(false);
-          }
-        }
-      };
-
-      load();
-
-      return () => {
-        isActive = false;
-      };
-    }, []),
-  );
+  const { data: stories, isLoading } = useFocusAsyncData<Story[]>(getStories, []);
 
   if (isLoading) {
     return (
@@ -76,19 +61,34 @@ export default function StoriesScreen() {
       data={stories}
       keyExtractor={item => item.id}
       contentContainerStyle={{ paddingVertical: 32, paddingHorizontal: 16 }}
+      ListHeaderComponent={
+        <Pressable
+          onLongPress={() => navigation.navigate('AdminStories')}
+          delayLongPress={3000}
+        >
+          <Text style={styles.hiddenHeaderEmoji}>📚</Text>
+        </Pressable>
+      }
       renderItem={({ item, index }) => (
         <Pressable
-          onPress={() => navigation.navigate('StoryDetail', { storyId: item.id })}>
+          onPress={() => navigation.navigate('StoryDetail', { storyId: item.id })}
+        >
           <View style={index % 2 === 0 ? styles.cardEven : styles.cardOdd}>
             {index % 2 === 0 ? (
               <View style={styles.containerCard}>
-                <StoryTitleAndDescription title={item.title} description={item.description} />
+                <StoryTitleAndDescription
+                  title={item.title}
+                  description={item.description}
+                />
                 <StoryImage cover={item.cover} />
               </View>
             ) : (
               <View style={styles.containerCard}>
                 <StoryImage cover={item.cover} />
-                <StoryTitleAndDescription title={item.title} description={item.description} />
+                <StoryTitleAndDescription
+                  title={item.title}
+                  description={item.description}
+                />
               </View>
             )}
           </View>
@@ -99,6 +99,11 @@ export default function StoriesScreen() {
 }
 
 const styles = StyleSheet.create({
+  hiddenHeaderEmoji: {
+    fontSize: 28,
+    textAlign: 'center',
+    marginVertical: 16,
+  },
   center: {
     flex: 1,
     alignItems: 'center',

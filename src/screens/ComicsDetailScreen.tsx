@@ -1,16 +1,21 @@
-import { Image, Pressable, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+  useWindowDimensions,
+} from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import { getComicWithPages } from '../db';
 import type { Comic } from '../types/comics';
-import { useEffect, useLayoutEffect, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import { EmptyScreen } from '../components/EmptyScreen';
+import { useFocusAsyncData } from '../hooks/useFocusAsyncData';
 
-type ComicsDetailRouteProp = RouteProp<
-  RootStackParamList,
-  'ComicsDetail'
->;
+type ComicsDetailRouteProp = RouteProp<RootStackParamList, 'ComicsDetail'>;
 
 export default function ComicsDetailScreen() {
   const { width, height } = useWindowDimensions();
@@ -20,8 +25,8 @@ export default function ComicsDetailScreen() {
 
   const { comicId } = route.params;
 
-  const [comic, setComic] = useState<Comic | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const loadComic = useCallback(() => getComicWithPages(comicId), [comicId]);
+  const { data: comic, isLoading } = useFocusAsyncData<Comic | null>(loadComic, null);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -31,31 +36,6 @@ export default function ComicsDetailScreen() {
       headerShown: false,
     });
   }, [navigation]);
-
-  useEffect(() => {
-    let isActive = true;
-
-    const load = async () => {
-      try {
-        const data = await getComicWithPages(comicId);
-        if (isActive) {
-          setComic(data);
-        }
-      } catch (error) {
-        console.error('Error loading comic:', error);
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      isActive = false;
-    };
-  }, [comicId]);
 
   if (isLoading) {
     return (
@@ -100,13 +80,9 @@ export default function ComicsDetailScreen() {
         <>
           <Text style={styles.finishedEmoji}>📖✨</Text>
 
-          <Text style={styles.finishedTitle}>
-            Bu masal da burada bitmişşşş...
-          </Text>
+          <Text style={styles.finishedTitle}>Bu masal da burada bitmişşşş...</Text>
 
-          <Text style={styles.finishedText}>
-            Ama merak etme 😊
-          </Text>
+          <Text style={styles.finishedText}>Ama merak etme 😊</Text>
 
           <Text style={styles.finishedText}>
             Tekrar okumak için ekrana dokunabilirsin.
@@ -127,15 +103,9 @@ export default function ComicsDetailScreen() {
         resizeMode="contain"
       />
 
-      <Pressable
-        style={styles.leftZone}
-        onPress={goPrevious}
-      />
+      <Pressable style={styles.leftZone} onPress={goPrevious} />
 
-      <Pressable
-        style={styles.rightZone}
-        onPress={goNext}
-      />
+      <Pressable style={styles.rightZone} onPress={goNext} />
     </View>
   );
 }

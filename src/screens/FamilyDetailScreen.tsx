@@ -1,30 +1,12 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { Alert } from 'react-native';
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import {
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
 import { RootStackParamList } from '../types/navigation';
-import {
-  getFamilyMemberById,
-  getPhotosByMember,
-  deletePhotosByMemberId,
-} from '../db';
+import { getFamilyMemberById, getPhotosByMember, deletePhotosByMemberId } from '../db';
 
-type FamilyDetailRouteProp = RouteProp<
-  RootStackParamList,
-  'FamilyDetail'
->;
+type FamilyDetailRouteProp = RouteProp<RootStackParamList, 'FamilyDetail'>;
 
 type FamilyMember = {
   id: string;
@@ -43,54 +25,41 @@ export default function FamilyDetailScreen() {
   const navigation = useNavigation();
 
   const handleDeletePhoto = async () => {
-    Alert.alert(
-      'Fotoğrafı Sil',
-      'Bu fotoğrafı silmek istediğinizden emin misiniz?',
-      [
-        {
-          text: 'İptal',
-          style: 'cancel',
+    Alert.alert('Fotoğrafı Sil', 'Bu fotoğrafı silmek istediğinizden emin misiniz?', [
+      {
+        text: 'İptal',
+        style: 'cancel',
+      },
+      {
+        text: 'Sil',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deletePhotosByMemberId(familyMemberId);
+            setPhotos([]);
+            setCurrentPhoto(0);
+          } catch (error) {
+            console.error(error);
+          }
         },
-        {
-          text: 'Sil',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deletePhotosByMemberId(familyMemberId);
-              setPhotos([]);
-              setCurrentPhoto(0);
-            } catch (error) {
-              console.error(error);
-            }
-          },
-        },
-      ],
-    );
+      },
+    ]);
   };
 
   const { familyMemberId } = route.params;
 
-  const [member, setMember] =
-    useState<FamilyMember | null>(null);
+  const [member, setMember] = useState<FamilyMember | null>(null);
 
-  const [photos, setPhotos] =
-    useState<FamilyPhoto[]>([]);
+  const [photos, setPhotos] = useState<FamilyPhoto[]>([]);
 
-  const [currentPhoto, setCurrentPhoto] =
-    useState(0);
+  const [currentPhoto, setCurrentPhoto] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const memberData =
-          await getFamilyMemberById(
-            familyMemberId,
-          );
+        const memberData = await getFamilyMemberById(familyMemberId);
 
-        const photosData =
-          await getPhotosByMember(
-            familyMemberId,
-          );
+        const photosData = await getPhotosByMember(familyMemberId);
 
         setMember(memberData);
         setPhotos(photosData);
@@ -104,9 +73,7 @@ export default function FamilyDetailScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: member
-        ? `${member.emoji} ${member.name}`
-        : 'Aile',
+      title: member ? `${member.emoji} ${member.name}` : 'Aile',
     });
   }, [navigation, member]);
 
@@ -124,9 +91,7 @@ export default function FamilyDetailScreen() {
         <Text>
           {member.emoji} {member.name}
         </Text>
-        <Text>
-          Henüz fotoğraf eklenmemiş.
-        </Text>
+        <Text>Henüz fotoğraf eklenmemiş.</Text>
       </View>
     );
   }
@@ -136,13 +101,8 @@ export default function FamilyDetailScreen() {
       <Pressable
         style={{ flex: 1 }}
         onPress={() => {
-          if (
-            currentPhoto <
-            photos.length - 1
-          ) {
-            setCurrentPhoto(
-              p => p + 1,
-            );
+          if (currentPhoto < photos.length - 1) {
+            setCurrentPhoto(p => p + 1);
           } else {
             setCurrentPhoto(0);
           }
@@ -152,8 +112,7 @@ export default function FamilyDetailScreen() {
       >
         <Image
           source={{
-            uri: photos[currentPhoto]
-              .photo_url,
+            uri: photos[currentPhoto].photo_url,
           }}
           style={styles.image}
           resizeMode="contain"
@@ -166,10 +125,7 @@ export default function FamilyDetailScreen() {
             key={index}
             style={{
               fontSize: 20,
-              opacity:
-                currentPhoto === index
-                  ? 1
-                  : 0.3,
+              opacity: currentPhoto === index ? 1 : 0.3,
             }}
           >
             ●

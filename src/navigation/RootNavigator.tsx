@@ -4,18 +4,16 @@ import AppTabs from './AppTabs';
 import StoryDetailScreen from '../screens/StoryDetailScreen';
 import ComicsDetailScreen from '../screens/ComicsDetailScreen';
 import FamilyDetailScreen from '../screens/FamilyDetailScreen';
-import AdminScreen from '../screens/Admin';
+import AdminStoriesScreen from '../screens/admin/AdminStoriesScreen';
+import AdminComicsScreen from '../screens/admin/AdminComicsScreen';
+import AdminFamilyScreen from '../screens/admin/AdminFamilyScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Tabs"
-        component={AppTabs}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="Tabs" component={AppTabs} options={{ headerShown: false }} />
 
       <Stack.Screen
         name="StoryDetail"
@@ -33,9 +31,19 @@ export default function RootNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Admin"
-        component={AdminScreen}
-        options={{ headerShown: false }}
+        name="AdminStories"
+        component={AdminStoriesScreen}
+        options={{ title: 'Masallar Yönetimi' }}
+      />
+      <Stack.Screen
+        name="AdminComics"
+        component={AdminComicsScreen}
+        options={{ title: 'Çizgi Romanlar Yönetimi' }}
+      />
+      <Stack.Screen
+        name="AdminFamily"
+        component={AdminFamilyScreen}
+        options={{ title: 'Aile Yönetimi' }}
       />
     </Stack.Navigator>
   );

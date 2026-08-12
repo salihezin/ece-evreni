@@ -25,7 +25,9 @@
       "expo-audio",
       "expo-asset",
       "expo-sqlite",
-      "expo-file-system"
+      "expo-file-system",
+      "expo-secure-store",
+      "expo-document-picker"
     ]
   }
 }
